@@ -1,0 +1,84 @@
+# Import Libraries 
+from pyspark.sql import SparkSession 
+from pyspark.sql.functions import col, when, isnan, count, mean 
+from pyspark.ml.feature import StringIndexer, OneHotEncoder, VectorAssembler 
+from pyspark.ml.classification import RandomForestClassifier 
+from pyspark.ml import Pipeline 
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator 
+
+# Start Spark Session 
+spark = SparkSession.builder.appName("Employee_Promotion_RF_Model").getOrCreate() 
+
+# Load Dataset 
+df = spark.read.csv("C:/Users/avnee/Downloads/employeePromotion-copy.csv", header=True, 
+inferSchema=True) 
+print("Total Rows:", df.count(), " | Total Columns:", len(df.columns)) 
+df.printSchema() 
+df.show(5) 
+
+# Check Missing Values 
+df.select([count(when(col(c).isNull() | isnan(c) | (col(c) == ""), c)).alias(c) for c in df.columns]).show()
+
+# Handle Missing Values 
+numeric_cols = ['no_of_trainings', 'age', 'previous_year_rating', 'length_of_service', 
+'avg_training_score'] 
+categorical_cols = ['department', 'region', 'education', 'gender', 'recruitment_channel'] 
+for c in numeric_cols: 
+mean_val = df.select(mean(col(c))).first()[0] 
+df = df.fillna({c: mean_val}) 
+for c in categorical_cols: 
+df = df.fillna({c: 'Unknown'}) 
+
+# Encode Categorical Columns 
+indexers = [StringIndexer(inputCol=c, outputCol=c + "_idx", handleInvalid='keep') for c in 
+categorical_cols] 
+encoder = OneHotEncoder(inputCols=[c + "_idx" for c in categorical_cols], 
+outputCols=[c + "_ohe" for c in categorical_cols]) 
+
+# Assemble Feature Vector 
+assembler_inputs = numeric_cols + [c + "_ohe" for c in categorical_cols] 
+assembler = VectorAssembler(inputCols=assembler_inputs, outputCol="features") 
+
+# Define Random Forest Model 
+rf = RandomForestClassifier( 
+labelCol="is_promoted", 
+featuresCol="features", 
+numTrees=100, 
+maxDepth=6, 
+seed=42 
+) 
+
+# Create Pipeline 
+pipeline = Pipeline(stages=indexers + [encoder, assembler, rf]) 
+
+# Split Data into Train & Test Sets 
+train_df, test_df = df.randomSplit([0.8, 0.2], seed=42) 
+print("Train Rows:", train_df.count(), "| Test Rows:", test_df.count()) 
+
+# Train the Model 
+model = pipeline.fit(train_df) 
+
+# Make Predictions 
+predictions = model.transform(test_df) 
+predictions.select("employee_id", "is_promoted", "prediction", "probability").show(10, 
+truncate=False) 
+
+# Evaluate Model 
+evaluator_acc = MulticlassClassificationEvaluator(labelCol="is_promoted", predictionCol="prediction", 
+metricName="accuracy") 
+evaluator_f1  = MulticlassClassificationEvaluator(labelCol="is_promoted", predictionCol="prediction", 
+metricName="f1") 
+accuracy = evaluator_acc.evaluate(predictions) 
+f1_score = evaluator_f1.evaluate(predictions) 
+print(f"   
+Model Accuracy: {accuracy:.4f}") 
+print(f"   
+F1-Score: {f1_score:.4f}") 
+
+#  Export Predictions  
+predictions.select("employee_id", "is_promoted", "prediction", "probability") \ 
+.toPandas().to_csv("employeePromotion.csv", index=False) 
+print(" Predictions saved as employeePromotion.csv (use for Power BI)") 
+
+# Stop Spark 
+spark.stop()

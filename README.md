@@ -118,6 +118,8 @@ Then imported into Power BI for visualization.
 
 4️⃣ Power BI Dashboard Explanation 
 Dashboard 1: Employee Data Summary
+<img width="861" height="482" alt="Screenshot 2025-11-13 202129" src="https://github.com/user-attachments/assets/0b55652a-d098-471d-a92a-3354b22527dc" />
+
 
 Explain each element:
 
@@ -164,6 +166,8 @@ promoted count
 Good for final HR insights.
 
 5️⃣ Dashboard 2: Employee Demographics Page
+<img width="864" height="488" alt="Screenshot 2025-11-13 202302" src="https://github.com/user-attachments/assets/c11a1864-70d0-4db7-8134-ea744bd957f9" />
+
 
 Explain:
 

@@ -4,7 +4,7 @@ My project is Employee Promotion Prediction using Machine Learning in PySpark.
 The goal is to help HR identify which employees are likely to get promoted based on their past records, performance, experience, and training data.
 
 Dataset used: employee_promotion.csv
-Rows: 11,050 employees
+Rows: 51,800 employees
 Columns: 14 attributes
 
 2️⃣ Objective of the Project

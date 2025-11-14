@@ -118,7 +118,8 @@ Then imported into Power BI for visualization.
 
 4️⃣ Power BI Dashboard Explanation 
 Dashboard 1: Employee Data Summary
-![Uploading image.png…]()
+<img width="865" height="486" alt="Screenshot 2025-11-14 132027" src="https://github.com/user-attachments/assets/555964d0-f8fc-466e-be59-6952d79b020e" />
+
 
 
 
